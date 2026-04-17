@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Number Squares">
+<meta name="apple-mobile-web-app-title" content="Number Squarez 2">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#F5F2EB" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)">
-<meta name="description" content="Magic Squares and Latin Squares puzzle game">
+<meta name="description" content="Suko and Greco-Latin puzzle game">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icon192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon512.png">
 <link rel="apple-touch-icon" sizes="192x192" href="icon192.png">
-<title>Number Squares</title>
+<title>Number Squarez 2</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500&display=swap');
 
@@ -35,6 +35,8 @@
     --star-active: #D4A017; --star-inactive: #D8D3C8;
     --gold: #D4A017; --gold-light: #FDF6E3;
     --radius: 12px; --radius-sm: 8px;
+    --zone-a: #F4E4C1; --zone-b: #D8E8F4; --zone-c: #E4D8F0;
+    --zone-a-text: #8A6A1F; --zone-b-text: #1F4A6A; --zone-c-text: #4A1F6A;
   }
   [data-theme="dark"] {
     --bg: #141414; --surface: #1E1E1E; --surface-alt: #262626;
@@ -52,6 +54,8 @@
     --overlay-bg: rgba(20,20,20,0.94);
     --star-active: #E8B930; --star-inactive: #444440;
     --gold: #E8B930; --gold-light: #2A2510;
+    --zone-a: #3A3020; --zone-b: #1F2A3A; --zone-c: #2A1F3A;
+    --zone-a-text: #E8B930; --zone-b-text: #6FA8D6; --zone-c-text: #B090D6;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -88,25 +92,38 @@
   .screen.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
   /* ── Menu ── */
-  #menu-screen { justify-content: center; align-items: center; gap: min(32px, 4vh); }
-  .menu-title { text-align: center; }
-  .menu-title h1 { font-family: 'DM Mono', monospace; font-size: clamp(28px, 5vw, 36px); font-weight: 500; letter-spacing: -1px; margin-bottom: 8px; }
-  .menu-title p { font-size: clamp(13px, 2vw, 15px); color: var(--text-muted); }
+  #menu-screen {
+    justify-content: flex-start; align-items: center;
+    gap: min(24px, 3vh);
+    padding-top: min(60px, 8vh);
+    padding-bottom: min(24px, 3vh);
+    overflow-y: auto;
+  }
+  .menu-title { text-align: center; flex-shrink: 0; }
+  .menu-title h1 { font-family: 'DM Mono', monospace; font-size: clamp(26px, 4.5vw, 34px); font-weight: 500; letter-spacing: -1px; margin-bottom: 6px; }
+  .menu-title p { font-size: clamp(12px, 1.9vw, 14px); color: var(--text-muted); }
 
-  .menu-modes { display: flex; flex-direction: column; gap: min(16px, 2vh); width: 100%; }
+  .menu-modes { display: flex; flex-direction: column; gap: min(14px, 1.8vh); width: 100%; padding-bottom: 8px; }
   .mode-card {
     background: var(--surface); border: 1.5px solid var(--border);
-    border-radius: var(--radius); padding: min(20px, 2.5vh) min(24px, 4vw);
+    border-radius: var(--radius); padding: min(18px, 2.2vh) min(22px, 4vw);
     cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-sm);
   }
   .mode-card:active { transform: scale(0.98); box-shadow: var(--shadow-md); border-color: var(--accent); }
-  .mode-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-  .mode-card h2 { font-family: 'DM Mono', monospace; font-size: clamp(16px, 3vw, 20px); font-weight: 500; }
-  .mode-card p { font-size: clamp(11px, 2vw, 13px); color: var(--text-muted); line-height: 1.5; }
-  .mode-stats { display: flex; gap: 16px; margin-top: min(12px, 1.5vh); padding-top: min(12px, 1.5vh); border-top: 1px solid var(--border); }
+  .mode-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 10px; }
+  .mode-card h2 { font-family: 'DM Mono', monospace; font-size: clamp(16px, 2.8vw, 19px); font-weight: 500; }
+  .mode-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 1px;
+    padding: 2px 6px; border-radius: 4px;
+    background: var(--accent-light); color: var(--accent);
+    text-transform: uppercase;
+  }
+  .mode-card p { font-size: clamp(11px, 1.95vw, 13px); color: var(--text-muted); line-height: 1.5; }
+  .mode-stats { display: flex; gap: 14px; margin-top: min(12px, 1.5vh); padding-top: min(12px, 1.5vh); border-top: 1px solid var(--border); }
   .mode-stat { text-align: center; flex: 1; }
-  .mode-stat-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-  .mode-stat-value { font-family: 'DM Mono', monospace; font-size: clamp(14px, 2.5vw, 16px); font-weight: 500; margin-top: 2px; }
+  .mode-stat-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+  .mode-stat-value { font-family: 'DM Mono', monospace; font-size: clamp(13px, 2.3vw, 15px); font-weight: 500; margin-top: 2px; }
 
   /* ── Setup ── */
   #setup-screen { justify-content: center; align-items: center; gap: min(28px, 3.5vh); }
@@ -126,8 +143,6 @@
   .size-btn:active { transform: scale(0.96); }
   .size-btn.locked { opacity: 0.45; cursor: default; }
   .size-btn.locked::after { content: '🔒'; position: absolute; top: -6px; right: -6px; font-size: 12px; }
-  .size-btn.newly-unlocked { border-color: var(--gold); box-shadow: 0 0 12px rgba(212,160,23,0.3); }
-  .size-btn.newly-unlocked::after { content: '✨'; position: absolute; top: -6px; right: -6px; font-size: 12px; }
 
   .unlock-info { text-align: center; font-size: clamp(10px, 1.8vw, 12px); color: var(--text-muted); min-height: 32px; line-height: 1.5; padding: 0 16px; }
   .unlock-info .gold { color: var(--gold); font-weight: 600; }
@@ -181,9 +196,26 @@
   .timer { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 400; color: var(--text-muted); min-width: 44px; text-align: right; }
   .game-mode-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; text-align: center; padding-bottom: min(4px, 0.5vh); font-weight: 500; flex-shrink: 0; }
   .hint-count { font-size: 10px; color: var(--text-muted); margin-left: 2px; }
-  .target-sums { text-align: center; padding: min(6px, 0.8vh) 0; font-family: 'DM Mono', monospace; font-size: 14px; color: var(--accent); font-weight: 500; flex-shrink: 0; }
 
-  /* ── Grid — fully dynamic ── */
+  /* Suko clue bar */
+  .suko-clues {
+    display: flex; justify-content: center; gap: 10px;
+    padding: min(6px, 0.8vh) 0;
+    flex-shrink: 0; flex-wrap: wrap;
+  }
+  .suko-clue {
+    font-family: 'DM Mono', monospace;
+    font-size: clamp(10px, 1.8vw, 12px);
+    padding: 3px 9px; border-radius: 10px;
+    font-weight: 500;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .suko-clue.zone-a { background: var(--zone-a); color: var(--zone-a-text); }
+  .suko-clue.zone-b { background: var(--zone-b); color: var(--zone-b-text); }
+  .suko-clue.zone-c { background: var(--zone-c); color: var(--zone-c-text); }
+  .suko-clue.satisfied::after { content: ' ✓'; font-size: 10px; }
+
+  /* ── Grid ── */
   .grid-container {
     display: flex; justify-content: center; align-items: center;
     padding: min(10px, 1.5vh) 0 min(24px, 3vh);
@@ -203,16 +235,50 @@
   .cell.drop-hover { background: var(--accent-light); box-shadow: inset 0 0 0 2px var(--accent); }
   .cell.correct-flash { background: var(--success-light); color: var(--success); }
 
-  /* ── Placement Animations ── */
+  /* Suko zone tinting */
+  .cell.zone-a { background: var(--zone-a); }
+  .cell.zone-b { background: var(--zone-b); }
+  .cell.zone-c { background: var(--zone-c); }
+  .cell.zone-a.filled, .cell.zone-a.given { background: color-mix(in srgb, var(--zone-a) 80%, var(--surface)); }
+  .cell.zone-b.filled, .cell.zone-b.given { background: color-mix(in srgb, var(--zone-b) 80%, var(--surface)); }
+  .cell.zone-c.filled, .cell.zone-c.given { background: color-mix(in srgb, var(--zone-c) 80%, var(--surface)); }
+
+  /* Suko intersection circles */
+  .suko-intersections {
+    position: absolute; inset: 0; pointer-events: none;
+  }
+  .suko-circle {
+    position: absolute;
+    width: var(--circle-size, 36px); height: var(--circle-size, 36px);
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: var(--circle-font, 13px);
+    font-weight: 600;
+    color: var(--accent);
+    box-shadow: var(--shadow-md);
+    transform: translate(-50%, -50%);
+    transition: all 0.2s ease;
+  }
+  .suko-circle.satisfied { background: var(--success-light); color: var(--success); border-color: var(--success); }
+  .suko-circle.wrong { background: var(--error-light); color: var(--error); border-color: var(--error); }
+
+  /* Greco-Latin pair rendering */
+  .cell .pair {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.15em; line-height: 1;
+  }
+  .cell .pair .sym { color: var(--text-muted); font-size: 0.85em; }
+  .cell.given .pair .sym, .cell.filled .pair .sym { opacity: 0.85; }
+
+  /* Animations */
   @keyframes pop-in {
     0% { transform: scale(0); opacity: 0; }
     50% { transform: scale(1.2); opacity: 1; }
     75% { transform: scale(0.92); }
     100% { transform: scale(1); }
-  }
-  @keyframes pop-out {
-    0% { transform: scale(1); opacity: 1; }
-    100% { transform: scale(0.3); opacity: 0; }
   }
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
@@ -237,29 +303,14 @@
     0%, 100% { transform: translate(-50%, -50%) scale(1); }
     50% { transform: translate(-50%, -50%) scale(1.06); }
   }
-  @keyframes tray-appear {
-    0% { transform: scale(0.5); opacity: 0; }
-    60% { transform: scale(1.08); opacity: 1; }
-    100% { transform: scale(1); }
-  }
 
   .cell.anim-pop-in { animation: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-  .cell.anim-pop-out { animation: pop-out 0.2s ease-in forwards; }
   .cell.anim-shake { animation: shake 0.4s ease; }
   .cell.anim-hint { animation: hint-glow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
   .cell.anim-win-ripple { animation: win-ripple 0.4s ease; }
   .drag-ghost { animation: ghost-pulse 0.8s ease-in-out infinite; }
-  .tray-number.anim-appear { animation: tray-appear 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
-  .sum-indicators-row, .sum-indicators-col { display: grid; gap: 2px; }
-  .sum-indicators-row { position: absolute; right: -36px; top: 2px; }
-  .sum-indicators-col { position: absolute; bottom: -28px; left: 2px; }
-  .sum-indicator { display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-muted); font-weight: 400; width: 30px; height: 100%; }
-  .sum-indicator.complete { color: var(--success); font-weight: 600; }
-  .sum-indicator.wrong { color: var(--error); }
-  .col-sum-indicator { height: 24px; width: 100%; }
-
-  /* ── Number Tray — fills remaining space ── */
+  /* Number Tray */
   .number-tray-section {
     flex: 1; min-height: 0;
     display: flex; flex-direction: column;
@@ -276,7 +327,6 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
-  /* Dynamic tray number sizing set via JS CSS custom property */
   .tray-number {
     width: var(--tray-size, 42px); height: var(--tray-size, 42px);
     background: var(--surface); border: 1.5px solid var(--border);
@@ -290,14 +340,22 @@
   }
   .tray-number:active { cursor: grabbing; box-shadow: var(--shadow-lg); transform: scale(1.08); }
   .tray-number.dragging { opacity: 0.3; }
+  .tray-number .pair {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.15em; line-height: 1;
+  }
+  .tray-number .pair .sym { color: var(--text-muted); font-size: 0.82em; }
 
   .drag-ghost {
     position: fixed; pointer-events: none; z-index: 1000;
-    width: 48px; height: 48px; background: var(--accent); color: var(--cell-selected-text);
+    min-width: 48px; min-height: 48px; padding: 0 8px;
+    background: var(--accent); color: var(--cell-selected-text);
     border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;
     font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 600;
     box-shadow: var(--shadow-lg); transform: translate(-50%, -50%);
   }
+  .drag-ghost .pair { display: flex; align-items: center; gap: 2px; }
+  .drag-ghost .pair .sym { opacity: 0.85; font-size: 0.9em; }
 
   .game-actions {
     display: flex; gap: 6px; justify-content: center;
@@ -314,7 +372,27 @@
   .action-btn.primary { background: var(--accent); color: var(--cell-selected-text); border-color: var(--accent); }
   .action-btn:disabled { opacity: 0.4; pointer-events: none; }
 
-  /* ── Win Overlay ── */
+  /* How-to overlay */
+  #howto-overlay {
+    position: absolute; inset: 0; background: var(--overlay-bg);
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    z-index: 120; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    padding: 0 24px;
+  }
+  #howto-overlay.active { opacity: 1; pointer-events: auto; }
+  .howto-panel {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: var(--radius); padding: 20px 22px;
+    width: 100%; max-width: 360px;
+    max-height: 80vh; overflow-y: auto;
+  }
+  .howto-panel h3 { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; margin-bottom: 10px; color: var(--accent); }
+  .howto-panel p { font-size: 13px; line-height: 1.55; color: var(--text); margin-bottom: 10px; }
+  .howto-panel ul { font-size: 13px; line-height: 1.55; color: var(--text); padding-left: 18px; margin-bottom: 10px; }
+  .howto-panel li { margin-bottom: 4px; }
+
+  /* Win Overlay */
   #win-overlay {
     position: absolute; inset: 0; background: var(--overlay-bg);
     display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -368,24 +446,24 @@
 
   <!-- Menu -->
   <div id="menu-screen" class="screen active">
-    <div class="menu-title"><h1>Number Squares <span style="font-size:0.35em;color:var(--text-muted);font-weight:400;vertical-align:super;">v0.5</span></h1><p>Choose your puzzle</p></div>
+    <div class="menu-title"><h1>Number Squarez 2 <span style="font-size:0.35em;color:var(--text-muted);font-weight:400;vertical-align:super;">v0.5</span></h1><p>Two puzzles beyond the grid</p></div>
     <div class="menu-modes">
-      <div class="mode-card" data-mode="magic">
-        <div class="mode-card-top"><h2>Magic Squares</h2></div>
-        <p>Fill the grid so every row, column, and diagonal sums to the same magic number.</p>
+      <div class="mode-card" data-mode="suko">
+        <div class="mode-card-top"><h2>Suko</h2><span class="mode-badge" style="background:var(--zone-a);color:var(--zone-a-text);">Cluster logic</span></div>
+        <p>A 3×3 grid with 1–9. Four circles show the sum of the four cells around them. Three colour zones each have a target total.</p>
         <div class="mode-stats">
-          <div class="mode-stat"><div class="mode-stat-label">Best</div><div class="mode-stat-value" id="menu-magic-best">—</div></div>
-          <div class="mode-stat"><div class="mode-stat-label">Wins</div><div class="mode-stat-value" id="menu-magic-wins">0</div></div>
-          <div class="mode-stat"><div class="mode-stat-label">Stars</div><div class="mode-stat-value" id="menu-magic-stars">0</div></div>
+          <div class="mode-stat"><div class="mode-stat-label">Best</div><div class="mode-stat-value" id="menu-suko-best">—</div></div>
+          <div class="mode-stat"><div class="mode-stat-label">Wins</div><div class="mode-stat-value" id="menu-suko-wins">0</div></div>
+          <div class="mode-stat"><div class="mode-stat-label">Stars</div><div class="mode-stat-value" id="menu-suko-stars">0</div></div>
         </div>
       </div>
-      <div class="mode-card" data-mode="latin">
-        <div class="mode-card-top"><h2>Latin Squares</h2></div>
-        <p>Place numbers so each appears exactly once in every row and column.</p>
+      <div class="mode-card" data-mode="greco">
+        <div class="mode-card-top"><h2>Greco-Latin</h2><span class="mode-badge" style="background:var(--zone-c);color:var(--zone-c-text);">Dual constraint</span></div>
+        <p>Each cell holds a number + Greek letter pair. Every number, every letter, and every combination must appear exactly once per row, column, and across the whole grid.</p>
         <div class="mode-stats">
-          <div class="mode-stat"><div class="mode-stat-label">Best</div><div class="mode-stat-value" id="menu-latin-best">—</div></div>
-          <div class="mode-stat"><div class="mode-stat-label">Wins</div><div class="mode-stat-value" id="menu-latin-wins">0</div></div>
-          <div class="mode-stat"><div class="mode-stat-label">Stars</div><div class="mode-stat-value" id="menu-latin-stars">0</div></div>
+          <div class="mode-stat"><div class="mode-stat-label">Best</div><div class="mode-stat-value" id="menu-greco-best">—</div></div>
+          <div class="mode-stat"><div class="mode-stat-label">Wins</div><div class="mode-stat-value" id="menu-greco-wins">0</div></div>
+          <div class="mode-stat"><div class="mode-stat-label">Stars</div><div class="mode-stat-value" id="menu-greco-stars">0</div></div>
         </div>
       </div>
     </div>
@@ -393,7 +471,7 @@
 
   <!-- Setup -->
   <div id="setup-screen" class="screen">
-    <div class="setup-header"><h2 id="setup-title">Magic Squares</h2><p id="setup-desc">Select grid size and difficulty</p></div>
+    <div class="setup-header"><h2 id="setup-title">Suko</h2><p id="setup-desc">Select grid size and difficulty</p></div>
     <div class="size-selector" id="size-selector"></div>
     <div class="unlock-info" id="unlock-info"></div>
     <div class="difficulty-selector">
@@ -412,21 +490,25 @@
   <!-- Game -->
   <div id="game-screen" class="screen">
     <div class="game-topbar">
-      <div class="game-topbar-left"><div class="btn-icon" id="btn-back">←</div></div>
+      <div class="game-topbar-left">
+        <div class="btn-icon" id="btn-back">←</div>
+        <div class="btn-icon" id="btn-howto" title="How to play">?</div>
+      </div>
       <div class="game-score-display">
         <div class="live-score" id="live-score">0</div>
         <div class="timer" id="timer">0:00</div>
       </div>
     </div>
     <div class="game-mode-label" id="game-mode-label"></div>
-    <div class="target-sums" id="target-sums"></div>
+    <div class="suko-clues" id="suko-clues" style="display:none"></div>
     <div class="grid-container" id="grid-container">
       <div class="grid-wrapper" id="grid-wrapper">
         <div class="grid" id="grid"></div>
+        <div class="suko-intersections" id="suko-intersections" style="display:none"></div>
       </div>
     </div>
     <div class="number-tray-section" id="tray-section">
-      <div class="tray-label">Drag numbers into the grid</div>
+      <div class="tray-label" id="tray-label">Drag numbers into the grid</div>
       <div class="number-tray" id="number-tray"></div>
     </div>
     <div class="game-actions">
@@ -435,6 +517,12 @@
       <button class="action-btn" id="btn-hint">Hint <span class="hint-count" id="hint-count">(3)</span></button>
       <button class="action-btn primary" id="btn-check">Check</button>
     </div>
+  </div>
+
+  <!-- How-to Overlay -->
+  <div id="howto-overlay">
+    <div class="howto-panel" id="howto-panel"></div>
+    <div style="margin-top:14px;color:var(--text-muted);font-size:11px;letter-spacing:1.2px;text-transform:uppercase;">tap to close</div>
   </div>
 
   <!-- Win Overlay -->
@@ -462,897 +550,6 @@
   </div>
 </div>
 
-<script>
-(() => {
-  let gameMode = 'magic', gridSize = 4, difficulty = 'medium';
-  let solution = [], puzzle = [], playerGrid = [];
-  let timerStart = 0, timerRAF = 0;
-  let moveCount = 0, hintsUsed = 0, maxHints = 3, checksUsed = 0;
-  let moveHistory = [];
-  let animateCells = new Set(); // cells to animate on next render: "r,c"
-  let animType = 'pop-in'; // current animation type for pending cells
-
-  const $ = id => document.getElementById(id);
-  const screens = { menu: $('menu-screen'), setup: $('setup-screen'), game: $('game-screen') };
-
-  // ── Theme ──
-  let darkMode = localStorage.getItem('ns-theme') === 'dark';
-  function applyTheme() {
-    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : '');
-    $('theme-toggle').textContent = darkMode ? '🌙' : '☀️';
-    localStorage.setItem('ns-theme', darkMode ? 'dark' : 'light');
-  }
-  $('theme-toggle').addEventListener('click', () => { darkMode = !darkMode; applyTheme(); });
-  applyTheme();
-
-  // ══════════════════════════════
-  // ── SOUND SYSTEM (Web Audio API — ASMR style) ──
-  // ══════════════════════════════
-  let audioCtx = null;
-  let soundEnabled = localStorage.getItem('ns-sound') !== 'off';
-
-  function ensureAudio() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-  }
-
-  // Unlock AudioContext on first user interaction
-  document.addEventListener('touchstart', ensureAudio, { once: true });
-  document.addEventListener('mousedown', ensureAudio, { once: true });
-
-  function updateMuteBtn() {
-    $('mute-toggle').textContent = soundEnabled ? '🔊' : '🔇';
-  }
-  $('mute-toggle').addEventListener('click', () => {
-    soundEnabled = !soundEnabled;
-    localStorage.setItem('ns-sound', soundEnabled ? 'on' : 'off');
-    updateMuteBtn();
-    if (soundEnabled) { ensureAudio(); sfx.tap(); }
-  });
-  updateMuteBtn();
-
-  // ── Sound primitives ──
-  function playTone(freq, duration, type, vol, attack, decay) {
-    if (!soundEnabled || !audioCtx) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type || 'sine';
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0, audioCtx.currentTime);
-    gain.gain.linearRampToValueAtTime(vol || 0.15, audioCtx.currentTime + (attack || 0.01));
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (duration || 0.15));
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(audioCtx.currentTime);
-    osc.stop(audioCtx.currentTime + (duration || 0.15) + 0.05);
-  }
-
-  function playNoise(duration, vol, filterFreq) {
-    if (!soundEnabled || !audioCtx) return;
-    const bufferSize = audioCtx.sampleRate * (duration || 0.08);
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1);
-    const src = audioCtx.createBufferSource();
-    src.buffer = buffer;
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(filterFreq || 2000, audioCtx.currentTime);
-    const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(vol || 0.08, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (duration || 0.08));
-    src.connect(filter);
-    filter.connect(gain);
-    gain.connect(audioCtx.destination);
-    src.start(audioCtx.currentTime);
-    src.stop(audioCtx.currentTime + (duration || 0.08) + 0.01);
-  }
-
-  // ── Named sound effects ──
-  const sfx = {
-    // Crisp snap — tile picked up
-    pickUp() {
-      playTone(800, 0.06, 'triangle', 0.12, 0.005, 0.05);
-      playNoise(0.04, 0.06, 3500);
-    },
-    // Satisfying deep thud — tile placed in cell
-    place() {
-      playTone(180, 0.18, 'sine', 0.2, 0.005, 0.15);
-      playTone(120, 0.12, 'sine', 0.1, 0.01, 0.1);
-      playNoise(0.06, 0.08, 800);
-    },
-    // Lighter pop — tile returned to tray
-    returnToTray() {
-      playTone(500, 0.08, 'triangle', 0.1, 0.005, 0.06);
-      playNoise(0.03, 0.04, 2500);
-    },
-    // Soft dull — invalid drop / snap back
-    snapBack() {
-      playTone(200, 0.1, 'sine', 0.08, 0.01, 0.08);
-      playNoise(0.05, 0.04, 600);
-    },
-    // Gentle shimmer — hint revealed
-    hint() {
-      playTone(880, 0.12, 'sine', 0.1, 0.005, 0.1);
-      setTimeout(() => playTone(1100, 0.15, 'sine', 0.08, 0.005, 0.12), 60);
-      setTimeout(() => playTone(1320, 0.2, 'sine', 0.06, 0.005, 0.15), 120);
-    },
-    // Whoosh — clear all
-    clear() {
-      playNoise(0.25, 0.12, 1200);
-      playTone(400, 0.15, 'sawtooth', 0.04, 0.01, 0.12);
-    },
-    // Soft reverse click — undo
-    undo() {
-      playTone(600, 0.06, 'triangle', 0.08, 0.005, 0.05);
-      playTone(400, 0.08, 'triangle', 0.06, 0.02, 0.06);
-    },
-    // Low buzz — error
-    error() {
-      playTone(150, 0.2, 'sawtooth', 0.08, 0.01, 0.15);
-      playTone(140, 0.2, 'sawtooth', 0.06, 0.01, 0.15);
-    },
-    // Minimal click — button/UI tap
-    tap() {
-      playTone(700, 0.04, 'triangle', 0.08, 0.003, 0.03);
-    },
-    // Ascending celebration — win
-    win() {
-      const notes = [523, 659, 784, 1047]; // C5 E5 G5 C6
-      notes.forEach((f, i) => {
-        setTimeout(() => {
-          playTone(f, 0.3, 'sine', 0.12, 0.01, 0.25);
-          playTone(f * 0.5, 0.25, 'sine', 0.06, 0.01, 0.2);
-        }, i * 120);
-      });
-      setTimeout(() => playNoise(0.3, 0.06, 3000), 400);
-    },
-    // Bright ping — star earned
-    star() {
-      playTone(1200, 0.15, 'sine', 0.1, 0.005, 0.12);
-      playNoise(0.03, 0.04, 5000);
-    },
-    // Special fanfare — unlock
-    unlock() {
-      const notes = [440, 554, 659, 880, 1047];
-      notes.forEach((f, i) => {
-        setTimeout(() => playTone(f, 0.25, 'sine', 0.1, 0.005, 0.2), i * 100);
-      });
-      setTimeout(() => playNoise(0.4, 0.08, 4000), 450);
-    }
-  };
-
-  // ── Unlock System ──
-  const UNLOCK_SCORE = 2500;
-  function getUnlocks(m) { try { return JSON.parse(localStorage.getItem(`ns-unlocks-${m}`) || '{}'); } catch { return {}; } }
-  function saveUnlocks(m, u) { localStorage.setItem(`ns-unlocks-${m}`, JSON.stringify(u)); }
-  function isGridUnlocked(m, s) { if (s <= 6) return true; return !!getUnlocks(m)[`grid${s}`]; }
-  function checkAndUnlock(m, s, score, diff, hints) {
-    const u = getUnlocks(m); let nw = null;
-    if (!u.grid7 && (score >= UNLOCK_SCORE || (s === 6 && diff === 'hard' && hints === 0))) { u.grid7 = true; nw = 7; }
-    if (u.grid7 && !u.grid8 && ((s === 7 && score >= UNLOCK_SCORE) || (s === 7 && diff === 'hard' && hints === 0))) { u.grid8 = true; nw = 8; }
-    saveUnlocks(m, u); return nw;
-  }
-  function getNextUnlockHint(m) {
-    const u = getUnlocks(m);
-    if (!u.grid7) return { size: 7, req: `Score ${UNLOCK_SCORE.toLocaleString()}+ or beat 6×6 Hard with no hints` };
-    if (!u.grid8) return { size: 8, req: `Score ${UNLOCK_SCORE.toLocaleString()}+ on 7×7 or beat 7×7 Hard with no hints` };
-    return null;
-  }
-
-  // ── Per-Mode Scoring ──
-  function getModeStats(m) { try { return JSON.parse(localStorage.getItem(`ns-stats-${m}`) || '{}'); } catch { return {}; } }
-  function saveModeStats(m, s) { localStorage.setItem(`ns-stats-${m}`, JSON.stringify(s)); }
-  function getScoreKey() { return `ns-score-${gameMode}-${gridSize}-${difficulty}`; }
-  function getBestScore() { return parseInt(localStorage.getItem(getScoreKey()) || '0'); }
-  function saveBestScore(score) { const p = getBestScore(); if (score > p) { localStorage.setItem(getScoreKey(), score.toString()); return true; } return false; }
-  function recordWin(m, score, stars) { const s = getModeStats(m); s.totalWins = (s.totalWins||0)+1; s.totalStars = (s.totalStars||0)+stars; s.overallBest = Math.max(s.overallBest||0, score); saveModeStats(m, s); }
-
-  function getBasePoints() {
-    const sm = {4:1, 5:1.5, 6:2.2, 7:3, 8:4}, dm = {easy:1, medium:2, hard:3.5};
-    return Math.round(500 * (sm[gridSize]||1) * (dm[difficulty]||1));
-  }
-  function calculateScore() {
-    const base = getBasePoints(), elapsed = Math.floor((performance.now()-timerStart)/1000);
-    const tp = Math.min(base, Math.floor(elapsed/10)*Math.round(base*0.01));
-    const hp = hintsUsed * Math.round(base*0.15);
-    const cp = Math.max(0, checksUsed-1) * Math.round(base*0.05);
-    const ec = gridSize*gridSize - countGivenCells();
-    const mp = Math.max(0, moveCount-ec) * Math.round(base*0.02);
-    return { base, timePenalty: tp, hintPenalty: hp, checkPenalty: cp, movePenalty: mp, total: Math.max(0, base-tp-hp-cp-mp), elapsed };
-  }
-  function countGivenCells() { let c=0; for(let r=0;r<gridSize;r++) for(let cc=0;cc<gridSize;cc++) if(puzzle[r][cc]!==0) c++; return c; }
-  function getStars(s) { const p=s/getBasePoints(); if(p>=0.8)return 3; if(p>=0.5)return 2; return 1; }
-  function updateLiveScore() { $('live-score').textContent = calculateScore().total.toLocaleString(); }
-
-  // ── Menu ──
-  function updateMenuScores() {
-    ['magic','latin'].forEach(m => {
-      const s = getModeStats(m);
-      $(`menu-${m}-best`).textContent = s.overallBest ? s.overallBest.toLocaleString() : '—';
-      $(`menu-${m}-wins`).textContent = s.totalWins || 0;
-      $(`menu-${m}-stars`).textContent = s.totalStars || 0;
-    });
-  }
-
-  // ── Setup ──
-  function renderSizeButtons() {
-    const sel = $('size-selector'); sel.innerHTML = '';
-    [4,5,6,7,8].forEach(s => {
-      const btn = document.createElement('button');
-      btn.className = 'size-btn'; btn.dataset.size = s; btn.textContent = `${s}×${s}`;
-      if (!isGridUnlocked(gameMode, s)) btn.classList.add('locked');
-      if (s === gridSize && isGridUnlocked(gameMode, s)) btn.classList.add('selected');
-      btn.addEventListener('click', () => {
-        if (!isGridUnlocked(gameMode, s)) return;
-        sfx.tap();
-        sel.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected'); gridSize = s;
-        updateSetupBest(); updateUnlockInfo();
-      });
-      sel.appendChild(btn);
-    });
-    if (!isGridUnlocked(gameMode, gridSize)) { gridSize = 6; sel.querySelector('[data-size="6"]')?.classList.add('selected'); }
-  }
-  function updateUnlockInfo() {
-    const h = getNextUnlockHint(gameMode);
-    $('unlock-info').innerHTML = h ? `<span class="gold">${h.size}×${h.size} locked</span> — ${h.req}` : `<span class="gold">All grids unlocked!</span>`;
-  }
-  function updateSetupBest() {
-    const b = getBestScore();
-    $('setup-best').innerHTML = b > 0
-      ? `<div class="setup-best-label">Best for this config</div><div class="setup-best-value">${b.toLocaleString()}</div>`
-      : `<div class="setup-best-label" style="color:var(--text-muted)">No scores yet</div>`;
-    $('start-btn').disabled = !isGridUnlocked(gameMode, gridSize);
-  }
-
-  // ── Navigation ──
-  function showScreen(name) {
-    Object.values(screens).forEach(s => s.classList.remove('active'));
-    screens[name].classList.add('active');
-    $('win-overlay').classList.remove('active');
-    if (name === 'menu') updateMenuScores();
-    if (name === 'setup') { renderSizeButtons(); updateSetupBest(); updateUnlockInfo(); }
-  }
-  document.querySelectorAll('.mode-card').forEach(card => {
-    card.addEventListener('click', () => {
-      sfx.tap();
-      gameMode = card.dataset.mode;
-      $('setup-title').textContent = gameMode === 'magic' ? 'Magic Squares' : 'Latin Squares';
-      showScreen('setup');
-    });
-  });
-  document.querySelectorAll('.diff-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      sfx.tap();
-      document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected'); difficulty = btn.dataset.diff; updateSetupBest();
-    });
-  });
-  $('start-btn').addEventListener('click', () => { sfx.tap(); startGame(); });
-  $('back-to-menu').addEventListener('click', () => { sfx.tap(); showScreen('menu'); });
-  $('btn-back').addEventListener('click', () => { sfx.tap(); cancelAnimationFrame(timerRAF); showScreen('setup'); });
-  $('btn-undo').addEventListener('click', undoLastMove);
-  $('btn-clear').addEventListener('click', clearPlayerCells);
-  $('btn-hint').addEventListener('click', giveHint);
-  $('btn-check').addEventListener('click', checkSolution);
-  $('btn-new-puzzle').addEventListener('click', () => { sfx.tap(); startGame(); });
-  $('btn-menu').addEventListener('click', () => { sfx.tap(); showScreen('menu'); });
-
-  // ══════════════════════════════
-  // ── DYNAMIC SIZING ──
-  // ══════════════════════════════
-  function computeLayout() {
-    const vh = window.innerHeight;
-    const vw = Math.min(540, window.innerWidth);
-    const n = gridSize;
-
-    // Fixed heights: topbar(~48) + modeLabel(~20) + targetSums(~30 if magic, 0 if latin) + actions(~44) + trayLabel(~24) + padding(~30)
-    const fixedH = 48 + 20 + (gameMode === 'magic' ? 30 : 0) + 44 + 24 + 30;
-    const availH = vh - fixedH;
-
-    // Grid gets ~50% of available, tray gets ~50%
-    const gridBudgetH = Math.floor(availH * 0.50);
-    const trayBudgetH = availH - gridBudgetH;
-
-    // Cell size: limited by both width and height
-    const sumIndicatorSpace = gameMode === 'magic' ? 40 : 0;
-    const maxCellFromW = Math.floor((vw - 48 - sumIndicatorSpace) / n) - 2;
-    const maxCellFromH = Math.floor((gridBudgetH - (gameMode === 'magic' ? 28 : 0)) / n) - 2;
-    const cellSize = Math.max(24, Math.min(maxCellFromW, maxCellFromH, 64));
-
-    // Tray number size: fit as many per row as possible, then size to fill
-    const trayGap = 4;
-    const trayPadding = 8;
-    const availTrayW = vw - 48 - trayPadding * 2;
-
-    // Target: 6 items per row for small grids, more for large
-    const itemsPerRow = Math.max(6, Math.min(8, Math.floor(availTrayW / 36)));
-    const traySize = Math.max(28, Math.min(44, Math.floor((availTrayW - (itemsPerRow - 1) * trayGap) / itemsPerRow)));
-    const trayFont = Math.max(12, Math.floor(traySize * 0.4));
-
-    return { cellSize, traySize, trayFont };
-  }
-
-  // ══════════════════════════════
-  // ── PUZZLE GENERATION ──
-  // ══════════════════════════════
-  function generateMagicSquare(n) {
-    if (n % 2 === 1) return generateOddMagic(n);
-    if (n % 4 === 0) return generateDoublyEvenMagic(n);
-    return generateSinglyEvenMagic(n);
-  }
-  function generateOddMagic(n) {
-    const g = Array.from({length:n}, ()=>Array(n).fill(0));
-    let r=0, c=Math.floor(n/2);
-    for(let num=1; num<=n*n; num++) { g[r][c]=num; let nr=(r-1+n)%n, nc=(c+1)%n; if(g[nr][nc]!==0){nr=(r+1)%n; nc=c;} r=nr; c=nc; }
-    return randomTransform(g, n);
-  }
-  function generateDoublyEvenMagic(n) {
-    const g = Array.from({length:n}, ()=>Array(n).fill(0));
-    let count=1;
-    for(let r=0;r<n;r++) for(let c=0;c<n;c++) g[r][c]=count++;
-    for(let r=0;r<n;r++) for(let c=0;c<n;c++) { const rm=r%4, cm=c%4; if(rm===cm||rm+cm===3) g[r][c]=(n*n+1)-g[r][c]; }
-    return randomTransform(g, n);
-  }
-  function generateSinglyEvenMagic(n) {
-    const m=Math.floor(n/2), sub=generateOddMagicRaw(m);
-    const g=Array.from({length:n},()=>Array(n).fill(0));
-    for(let r=0;r<m;r++) for(let c=0;c<m;c++) { g[r][c]=sub[r][c]; g[r][c+m]=sub[r][c]+2*m*m; g[r+m][c]=sub[r][c]+3*m*m; g[r+m][c+m]=sub[r][c]+m*m; }
-    const k=Math.floor((m-1)/2);
-    for(let r=0;r<m;r++) for(let j=0;j<k;j++) { const col=(r===Math.floor(m/2))?j+1:j; if(col<n)[g[r][col],g[r+m][col]]=[g[r+m][col],g[r][col]]; }
-    const sr=Math.floor(m/2)-1;
-    for(let r=0;r<m;r++) for(let j=0;j<sr;j++) { const col=n-1-j; [g[r][col],g[r+m][col]]=[g[r+m][col],g[r][col]]; }
-    return randomTransform(g, n);
-  }
-  function generateOddMagicRaw(n) {
-    const g=Array.from({length:n},()=>Array(n).fill(0));
-    let r=0, c=Math.floor(n/2);
-    for(let num=1;num<=n*n;num++){g[r][c]=num; let nr=(r-1+n)%n, nc=(c+1)%n; if(g[nr][nc]!==0){nr=(r+1)%n;nc=c;} r=nr;c=nc;}
-    return g;
-  }
-  function generateLatinSquare(n) {
-    const g=[]; for(let r=0;r<n;r++){const row=[]; for(let c=0;c<n;c++) row.push(((r+c)%n)+1); g.push(row);} return shuffleLatinSquare(g,n);
-  }
-  function shuffleLatinSquare(g,n) {
-    for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[g[i],g[j]]=[g[j],g[i]];}
-    for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); for(let r=0;r<n;r++)[g[r][i],g[r][j]]=[g[r][j],g[r][i]];}
-    const p=Array.from({length:n},(_,i)=>i+1); for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[p[i],p[j]]=[p[j],p[i]];}
-    for(let r=0;r<n;r++) for(let c=0;c<n;c++) g[r][c]=p[g[r][c]-1];
-    return g;
-  }
-  function randomTransform(g,n) {
-    const rot=Math.floor(Math.random()*4);
-    for(let t=0;t<rot;t++){const ng=Array.from({length:n},()=>Array(n).fill(0)); for(let r=0;r<n;r++) for(let c=0;c<n;c++) ng[c][n-1-r]=g[r][c]; g=ng;}
-    if(Math.random()<0.5) for(let r=0;r<n;r++) g[r].reverse();
-    return g;
-  }
-  function createPuzzle(sol,n,diff) {
-    const p = sol.map(r => [...r]);
-    const total = n*n;
-    const hide = diff === 'easy' ? 0.4 : diff === 'medium' ? 0.6 : 0.75;
-    let count = Math.floor(total * hide);
-    while (count > 0) {
-      const r = Math.floor(Math.random()*n), c = Math.floor(Math.random()*n);
-      if (p[r][c] !== 0) { p[r][c] = 0; count--; }
-    }
-    return p;
-  }
-  function magicConstant(g,n){let s=0; for(let c=0;c<n;c++) s+=g[0][c]; return s;}
-
-  // ── Start Game ──
-  function startGame() {
-    solution = gameMode==='magic' ? generateMagicSquare(gridSize) : generateLatinSquare(gridSize);
-    puzzle = createPuzzle(solution, gridSize, difficulty);
-    playerGrid = puzzle.map(r=>[...r]);
-    moveCount=0; hintsUsed=0; checksUsed=0; moveHistory=[];
-    maxHints = difficulty==='easy'?5:difficulty==='medium'?3:2;
-    renderGame(); showScreen('game'); startTimer();
-  }
-
-  // ══════════════════════════════
-  // ── RENDER ──
-  // ══════════════════════════════
-  function renderGame() {
-    const n = gridSize;
-    $('game-mode-label').textContent = `${gameMode==='magic'?'MAGIC SQUARE':'LATIN SQUARE'} · ${n}×${n} · ${difficulty.toUpperCase()}`;
-    if (gameMode==='magic') { $('target-sums').textContent=`Target sum: ${magicConstant(solution,n)}`; $('target-sums').style.display=''; }
-    else $('target-sums').style.display='none';
-    $('hint-count').textContent = `(${maxHints-hintsUsed})`;
-    $('btn-hint').disabled = hintsUsed >= maxHints;
-    $('btn-undo').disabled = moveHistory.length === 0;
-    renderGrid(); renderTray(); updateLiveScore();
-  }
-
-  function renderGrid() {
-    const n = gridSize, grid = $('grid');
-    const layout = computeLayout();
-    const cs = layout.cellSize;
-
-    grid.style.gridTemplateColumns = `repeat(${n}, ${cs}px)`;
-    grid.style.gridTemplateRows = `repeat(${n}, ${cs}px)`;
-    grid.innerHTML = '';
-    const fs = Math.max(11, cs * 0.38);
-    for (let r=0; r<n; r++) {
-      for (let c=0; c<n; c++) {
-        const cell = document.createElement('div');
-        cell.className = 'cell'; cell.dataset.row=r; cell.dataset.col=c;
-        cell.style.fontSize = `${fs}px`;
-        if (puzzle[r][c]!==0) { cell.classList.add('given'); cell.textContent=puzzle[r][c]; }
-        else if (playerGrid[r][c]!==0) { cell.classList.add('filled'); cell.textContent=playerGrid[r][c]; cell.style.cursor='grab'; }
-        else cell.classList.add('empty');
-
-        // Apply pending animation
-        const key = `${r},${c}`;
-        if (animateCells.has(key)) {
-          cell.classList.add(`anim-${animType}`);
-          cell.addEventListener('animationend', () => cell.classList.remove(`anim-${animType}`), { once: true });
-        }
-
-        grid.appendChild(cell);
-      }
-    }
-    // Clear animation queue
-    animateCells.clear();
-
-    renderSumIndicators(n, cs);
-
-    // Set tray sizes via CSS custom properties
-    const tray = $('tray-section');
-    tray.style.setProperty('--tray-size', layout.traySize + 'px');
-    tray.style.setProperty('--tray-font', layout.trayFont + 'px');
-  }
-
-  function renderSumIndicators(n, cs) {
-    const wrapper = $('grid-wrapper');
-    wrapper.querySelectorAll('.sum-indicators-row, .sum-indicators-col').forEach(el => el.remove());
-    if (gameMode !== 'magic') return;
-    const mc = magicConstant(solution, n);
-    const indFs = Math.max(9, cs * 0.22);
-    const showAlways = (difficulty === 'easy');
-
-    const rowInd = document.createElement('div');
-    rowInd.className = 'sum-indicators-row';
-    rowInd.style.gridTemplateRows = `repeat(${n}, ${cs}px)`;
-    for (let r=0;r<n;r++) {
-      const ind = document.createElement('div'); ind.className = 'sum-indicator';
-      ind.style.fontSize = indFs + 'px';
-      let sum=0, filledCount=0;
-      for(let c=0;c<n;c++){if(playerGrid[r][c]!==0){sum+=playerGrid[r][c];filledCount++;}}
-      const isFull = (filledCount === n);
-      if (isFull || (showAlways && filledCount > 0)) {
-        ind.textContent = sum;
-        if (isFull) ind.classList.add(sum===mc?'complete':'wrong');
-      } else {
-        ind.textContent = '–';
-      }
-      rowInd.appendChild(ind);
-    }
-    wrapper.appendChild(rowInd);
-
-    const colInd = document.createElement('div');
-    colInd.className = 'sum-indicators-col';
-    colInd.style.gridTemplateColumns = `repeat(${n}, ${cs}px)`;
-    for (let c=0;c<n;c++) {
-      const ind = document.createElement('div'); ind.className = 'sum-indicator col-sum-indicator';
-      ind.style.fontSize = indFs + 'px';
-      let sum=0, filledCount=0;
-      for(let r=0;r<n;r++){if(playerGrid[r][c]!==0){sum+=playerGrid[r][c];filledCount++;}}
-      const isFull = (filledCount === n);
-      if (isFull || (showAlways && filledCount > 0)) {
-        ind.textContent = sum;
-        if (isFull) ind.classList.add(sum===mc?'complete':'wrong');
-      } else {
-        ind.textContent = '–';
-      }
-      colInd.appendChild(ind);
-    }
-    wrapper.appendChild(colInd);
-  }
-
-  function renderTray() {
-    const tray = $('number-tray'); tray.innerHTML = '';
-    getNeededNumbers().forEach((num, idx) => {
-      const el = document.createElement('div');
-      el.className = 'tray-number'; el.textContent = num;
-      el.dataset.value = num; el.dataset.index = idx;
-      tray.appendChild(el);
-    });
-  }
-
-  function getNeededNumbers() {
-    const n=gridSize, placed=[];
-    for(let r=0;r<n;r++) for(let c=0;c<n;c++) if(playerGrid[r][c]!==0) placed.push(playerGrid[r][c]);
-    if (gameMode==='latin') {
-      const cn={}; for(let i=1;i<=n;i++) cn[i]=n; placed.forEach(v=>{if(cn[v])cn[v]--;});
-      const rem=[]; for(let i=1;i<=n;i++) for(let k=0;k<cn[i];k++) rem.push(i); return rem.sort((a,b)=>a-b);
-    }
-    const all=solution.flat(), pc={}, ac={};
-    placed.forEach(v=>{pc[v]=(pc[v]||0)+1;}); all.forEach(v=>{ac[v]=(ac[v]||0)+1;});
-    const rem=[]; for(const[num,count] of Object.entries(ac)){const r=count-(pc[num]||0); for(let i=0;i<r;i++) rem.push(parseInt(num));}
-    return rem.sort((a,b)=>a-b);
-  }
-
-  function removePlacedNumber(r,c) {
-    if(puzzle[r][c]!==0||playerGrid[r][c]===0)return;
-    const prev=playerGrid[r][c]; playerGrid[r][c]=0;
-    moveHistory.push({type:'remove',row:r,col:c,prevValue:prev,newValue:0});
-    $('btn-undo').disabled=false; renderGrid(); renderTray(); updateLiveScore();
-  }
-
-  // ── Drag & Drop (supports dragging from tray AND from grid cells) ──
-  let ghostEl=null, dragValue=null, dragSourceIdx=null;
-  let dragSourceCell=null; // {row, col} when dragging from a grid cell
-  let dragSourceEl=null;   // the DOM cell element being dragged from (to hide it without re-render)
-
-  function createGhost(v,x,y){ghostEl=document.createElement('div');ghostEl.className='drag-ghost';ghostEl.textContent=v;ghostEl.style.left=x+'px';ghostEl.style.top=y+'px';document.body.appendChild(ghostEl);}
-  function moveGhost(x,y){if(ghostEl){ghostEl.style.left=x+'px';ghostEl.style.top=y+'px';}}
-  function removeGhost(){if(ghostEl){ghostEl.remove();ghostEl=null;}}
-  function getCellUnderPoint(x,y){for(const el of document.elementsFromPoint(x,y)) if(el.classList.contains('cell')&&!el.classList.contains('given'))return el; return null;}
-
-  function isOverTray(x, y) {
-    const trayRect = $('tray-section').getBoundingClientRect();
-    return y >= trayRect.top && y <= trayRect.bottom && x >= trayRect.left && x <= trayRect.right;
-  }
-
-  function startDragFromCell(r, c, x, y, cellEl) {
-    const val = playerGrid[r][c];
-    if (val === 0 || puzzle[r][c] !== 0) return false;
-    dragValue = val;
-    dragSourceCell = { row: r, col: c };
-    dragSourceEl = cellEl;
-    // Visually hide the cell content WITHOUT re-rendering (keeps touch chain alive)
-    cellEl.textContent = '';
-    cellEl.classList.remove('filled');
-    cellEl.classList.add('empty');
-    cellEl.style.opacity = '0.3';
-    createGhost(dragValue, x, y);
-    sfx.pickUp();
-    return true;
-  }
-
-  function handleDragEnd(x, y) {
-    const cell = getCellUnderPoint(x, y);
-    let placed = false;
-    const droppedOnTray = isOverTray(x, y);
-
-    if (cell && !droppedOnTray) {
-      const r = parseInt(cell.dataset.row), c = parseInt(cell.dataset.col);
-      // Don't place on the same cell we picked up from
-      const sameCell = dragSourceCell && dragSourceCell.row === r && dragSourceCell.col === c;
-      if (puzzle[r][c] === 0 && !sameCell) {
-        const prev = playerGrid[r][c];
-        playerGrid[r][c] = dragValue;
-        placed = true;
-
-        if (dragSourceCell) {
-          playerGrid[dragSourceCell.row][dragSourceCell.col] = 0;
-          moveHistory.push({
-            type: 'grid-move',
-            fromRow: dragSourceCell.row, fromCol: dragSourceCell.col,
-            toRow: r, toCol: c,
-            movedValue: dragValue, displacedValue: prev
-          });
-          moveCount++;
-        } else {
-          moveHistory.push({ type: 'place', row: r, col: c, prevValue: prev, newValue: dragValue });
-          moveCount++;
-        }
-        sfx.place();
-        animateCells.add(`${r},${c}`); animType = 'pop-in';
-      }
-    }
-
-    if (dragSourceCell) {
-      if (droppedOnTray) {
-        playerGrid[dragSourceCell.row][dragSourceCell.col] = 0;
-        moveHistory.push({ type: 'remove', row: dragSourceCell.row, col: dragSourceCell.col, prevValue: dragValue, newValue: 0 });
-        placed = true;
-        sfx.returnToTray();
-      } else if (!placed) {
-        sfx.snapBack();
-      }
-    }
-
-    document.querySelectorAll('.cell.drop-hover').forEach(c => c.classList.remove('drop-hover'));
-    document.querySelectorAll('.tray-number.dragging').forEach(t => t.classList.remove('dragging'));
-    if (dragSourceEl) { dragSourceEl.style.opacity = ''; dragSourceEl = null; }
-    removeGhost();
-    dragValue = null; dragSourceIdx = null; dragSourceCell = null;
-    $('btn-undo').disabled = moveHistory.length === 0;
-    renderGrid(); renderTray(); updateLiveScore();
-    autoCheckCompletion();
-  }
-
-  // ── Touch: tray start ──
-  $('number-tray').addEventListener('touchstart', e => {
-    const t = e.target.closest('.tray-number'); if (!t) return;
-    e.preventDefault();
-    dragValue = parseInt(t.dataset.value); dragSourceIdx = parseInt(t.dataset.index);
-    dragSourceCell = null; dragSourceEl = null;
-    t.classList.add('dragging');
-    createGhost(dragValue, e.touches[0].clientX, e.touches[0].clientY);
-    sfx.pickUp();
-  }, { passive: false });
-
-  // ── Touch: grid cell start ──
-  $('grid').addEventListener('touchstart', e => {
-    if (dragValue !== null) return;
-    const cell = e.target.closest('.cell');
-    if (!cell || cell.classList.contains('given') || cell.classList.contains('empty')) return;
-    const r = parseInt(cell.dataset.row), c = parseInt(cell.dataset.col);
-    if (playerGrid[r][c] === 0 || puzzle[r][c] !== 0) return;
-    e.preventDefault();
-    startDragFromCell(r, c, e.touches[0].clientX, e.touches[0].clientY, cell);
-  }, { passive: false });
-
-  // ── Touch: move & end ──
-  document.addEventListener('touchmove', e => {
-    if (dragValue === null) return; e.preventDefault();
-    moveGhost(e.touches[0].clientX, e.touches[0].clientY);
-    document.querySelectorAll('.cell.drop-hover').forEach(c => c.classList.remove('drop-hover'));
-    const cell = getCellUnderPoint(e.touches[0].clientX, e.touches[0].clientY);
-    if (cell) cell.classList.add('drop-hover');
-  }, { passive: false });
-  document.addEventListener('touchend', e => {
-    if (dragValue === null) return;
-    handleDragEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-  });
-
-  // ── Mouse: tray start ──
-  $('number-tray').addEventListener('mousedown', e => {
-    const t = e.target.closest('.tray-number'); if (!t) return; e.preventDefault();
-    dragValue = parseInt(t.dataset.value); dragSourceIdx = parseInt(t.dataset.index);
-    dragSourceCell = null; dragSourceEl = null;
-    t.classList.add('dragging');
-    createGhost(dragValue, e.clientX, e.clientY);
-    sfx.pickUp();
-  });
-
-  // ── Mouse: grid cell start ──
-  $('grid').addEventListener('mousedown', e => {
-    if (dragValue !== null) return;
-    const cell = e.target.closest('.cell');
-    if (!cell || cell.classList.contains('given') || cell.classList.contains('empty')) return;
-    const r = parseInt(cell.dataset.row), c = parseInt(cell.dataset.col);
-    if (playerGrid[r][c] === 0 || puzzle[r][c] !== 0) return;
-    e.preventDefault();
-    startDragFromCell(r, c, e.clientX, e.clientY, cell);
-  });
-
-  // ── Mouse: move & end ──
-  document.addEventListener('mousemove', e => {
-    if (dragValue === null) return; moveGhost(e.clientX, e.clientY);
-    document.querySelectorAll('.cell.drop-hover').forEach(c => c.classList.remove('drop-hover'));
-    const cell = getCellUnderPoint(e.clientX, e.clientY);
-    if (cell) cell.classList.add('drop-hover');
-  });
-  document.addEventListener('mouseup', e => {
-    if (dragValue === null) return;
-    handleDragEnd(e.clientX, e.clientY);
-  });
-
-  // ── Auto-check on last tile placed ──
-  function autoCheckCompletion() {
-    const result = validateGrid();
-    if (!result.complete) return;
-    if (result.valid) {
-      cancelAnimationFrame(timerRAF);
-      // Staggered win ripple across all cells
-      const cells = $('grid').querySelectorAll('.cell');
-      const n = gridSize;
-      cells.forEach(cell => {
-        const r = parseInt(cell.dataset.row), c = parseInt(cell.dataset.col);
-        const delay = (r + c) * 60; // diagonal wave
-        setTimeout(() => {
-          cell.classList.add('anim-win-ripple');
-          cell.addEventListener('animationend', () => cell.classList.remove('anim-win-ripple'), { once: true });
-        }, delay);
-      });
-      setTimeout(() => showWin(), 1200);
-    }
-  }
-
-  // ── Timer ──
-  function startTimer(){cancelAnimationFrame(timerRAF);timerStart=performance.now();tickTimer();}
-  function tickTimer(){const s=Math.floor((performance.now()-timerStart)/1000);$('timer').textContent=`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;updateLiveScore();timerRAF=requestAnimationFrame(tickTimer);}
-  function getElapsedFormatted(){const s=Math.floor((performance.now()-timerStart)/1000);return `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;}
-
-  // ── Undo ──
-  function undoLastMove() {
-    if(!moveHistory.length)return; const e=moveHistory.pop();
-    if(e.type==='place'){playerGrid[e.row][e.col]=e.prevValue;moveCount=Math.max(0,moveCount-1);}
-    else if(e.type==='remove'){playerGrid[e.row][e.col]=e.prevValue;}
-    else if(e.type==='grid-move'){
-      // Reverse the move: put movedValue back to source, restore displaced value at destination
-      playerGrid[e.fromRow][e.fromCol]=e.movedValue;
-      playerGrid[e.toRow][e.toCol]=e.displacedValue;
-      moveCount=Math.max(0,moveCount-1);
-    }
-    else if(e.type==='hint'){playerGrid[e.row][e.col]=e.prevValue;moveCount=Math.max(0,moveCount-1);hintsUsed=Math.max(0,hintsUsed-1);$('hint-count').textContent=`(${maxHints-hintsUsed})`;$('btn-hint').disabled=hintsUsed>=maxHints;}
-    else if(e.type==='clear'){for(const c of e.cells) playerGrid[c.row][c.col]=c.value;}
-    $('btn-undo').disabled=moveHistory.length===0; renderGrid();renderTray();updateLiveScore();
-    sfx.undo();
-  }
-
-  // ── Actions ──
-  function clearPlayerCells() {
-    const cl=[];
-    for(let r=0;r<gridSize;r++) for(let c=0;c<gridSize;c++) if(puzzle[r][c]===0&&playerGrid[r][c]!==0) cl.push({row:r,col:c,value:playerGrid[r][c]});
-    if(!cl.length)return; moveHistory.push({type:'clear',cells:cl});
-    for(let r=0;r<gridSize;r++) for(let c=0;c<gridSize;c++) if(puzzle[r][c]===0) playerGrid[r][c]=0;
-    $('btn-undo').disabled=false; renderGrid();renderTray();updateLiveScore();
-    sfx.clear();
-  }
-  function giveHint() {
-    if(hintsUsed>=maxHints)return;
-    const em=[]; for(let r=0;r<gridSize;r++) for(let c=0;c<gridSize;c++) if(playerGrid[r][c]===0) em.push([r,c]);
-    if(!em.length)return;
-    const[r,c]=em[Math.floor(Math.random()*em.length)];
-    playerGrid[r][c]=solution[r][c]; moveCount++; hintsUsed++;
-    moveHistory.push({type:'hint',row:r,col:c,prevValue:0,newValue:solution[r][c]});
-    $('hint-count').textContent=`(${maxHints-hintsUsed})`; $('btn-hint').disabled=hintsUsed>=maxHints;
-    animateCells.add(`${r},${c}`); animType = 'hint';
-    $('btn-undo').disabled=false; renderGrid();renderTray();updateLiveScore();
-    sfx.hint();
-    autoCheckCompletion();
-  }
-  // ── Rule-based validation (accepts ANY valid solution, not just the generated one) ──
-  function validateGrid() {
-    const n = gridSize, g = playerGrid;
-
-    // Check all cells filled
-    for (let r=0;r<n;r++) for (let c=0;c<n;c++) if (g[r][c]===0) return { complete: false, valid: false, errorCells: [] };
-
-    if (gameMode === 'magic') {
-      return validateMagicSquare(n, g);
-    } else {
-      return validateLatinSquare(n, g);
-    }
-  }
-
-  function validateMagicSquare(n, g) {
-    const mc = magicConstant(solution, n);
-    const errors = new Set();
-
-    // Check correct numbers used (must be 1..n² each exactly once)
-    const used = {};
-    for (let r=0;r<n;r++) for (let c=0;c<n;c++) {
-      const v = g[r][c];
-      if (v < 1 || v > n*n) { errors.add(`${r},${c}`); continue; }
-      used[v] = (used[v]||0) + 1;
-    }
-    // Flag duplicates
-    const dupes = new Set();
-    for (const [v, count] of Object.entries(used)) if (count > 1) dupes.add(parseInt(v));
-    if (dupes.size > 0) {
-      for (let r=0;r<n;r++) for (let c=0;c<n;c++) if (dupes.has(g[r][c]) && puzzle[r][c]===0) errors.add(`${r},${c}`);
-    }
-
-    // Check row sums
-    for (let r=0;r<n;r++) {
-      let sum=0; for (let c=0;c<n;c++) sum+=g[r][c];
-      if (sum!==mc) for (let c=0;c<n;c++) if (puzzle[r][c]===0) errors.add(`${r},${c}`);
-    }
-    // Check col sums
-    for (let c=0;c<n;c++) {
-      let sum=0; for (let r=0;r<n;r++) sum+=g[r][c];
-      if (sum!==mc) for (let r=0;r<n;r++) if (puzzle[r][c]===0) errors.add(`${r},${c}`);
-    }
-    // Check main diagonal
-    let d1=0; for (let i=0;i<n;i++) d1+=g[i][i];
-    if (d1!==mc) for (let i=0;i<n;i++) if (puzzle[i][i]===0) errors.add(`${i},${i}`);
-    // Check anti-diagonal
-    let d2=0; for (let i=0;i<n;i++) d2+=g[i][n-1-i];
-    if (d2!==mc) for (let i=0;i<n;i++) if (puzzle[i][n-1-i]===0) errors.add(`${i},${n-1-i}`);
-
-    return { complete: true, valid: errors.size === 0, errorCells: [...errors] };
-  }
-
-  function validateLatinSquare(n, g) {
-    const errors = new Set();
-    // Each row must contain 1..n exactly once
-    for (let r=0;r<n;r++) {
-      const seen = {};
-      for (let c=0;c<n;c++) { const v=g[r][c]; seen[v]=(seen[v]||0)+1; }
-      for (let c=0;c<n;c++) if (seen[g[r][c]]>1 && puzzle[r][c]===0) errors.add(`${r},${c}`);
-    }
-    // Each col must contain 1..n exactly once
-    for (let c=0;c<n;c++) {
-      const seen = {};
-      for (let r=0;r<n;r++) { const v=g[r][c]; seen[v]=(seen[v]||0)+1; }
-      for (let r=0;r<n;r++) if (seen[g[r][c]]>1 && puzzle[r][c]===0) errors.add(`${r},${c}`);
-    }
-    // Check values in range
-    for (let r=0;r<n;r++) for (let c=0;c<n;c++) if (g[r][c]<1||g[r][c]>n) if(puzzle[r][c]===0) errors.add(`${r},${c}`);
-
-    return { complete: true, valid: errors.size === 0, errorCells: [...errors] };
-  }
-
-  function checkSolution() {
-    sfx.tap();
-    checksUsed++;
-    const result = validateGrid();
-    if (!result.complete) { highlightErrors(result.errorCells); return; }
-    if (result.valid) { cancelAnimationFrame(timerRAF); showWin(); }
-    else highlightErrors(result.errorCells);
-  }
-
-  function highlightErrors(errorCells) {
-    sfx.error();
-    if (!errorCells || errorCells.length === 0) {
-      $('grid').querySelectorAll('.cell.empty').forEach(cell => {
-        cell.classList.add('error', 'anim-shake');
-        setTimeout(() => { cell.classList.remove('error', 'anim-shake'); }, 1200);
-      });
-      return;
-    }
-    const errorSet = new Set(errorCells);
-    $('grid').querySelectorAll('.cell').forEach(cell => {
-      const key = `${cell.dataset.row},${cell.dataset.col}`;
-      if (errorSet.has(key)) {
-        cell.classList.add('error', 'anim-shake');
-        setTimeout(() => { cell.classList.remove('error', 'anim-shake'); }, 1200);
-      }
-    });
-  }
-
-  // ── Win ──
-  function showWin() {
-    const sc=calculateScore(), stars=getStars(sc.total), isNew=saveBestScore(sc.total);
-    recordWin(gameMode,sc.total,stars);
-    const nw=checkAndUnlock(gameMode,gridSize,sc.total,difficulty,hintsUsed);
-    $('win-time').textContent=getElapsedFormatted(); $('win-moves').textContent=moveCount;
-    document.querySelectorAll('.win-star').forEach(el=>{el.classList.toggle('earned',parseInt(el.dataset.star)<=stars);});
-
-    // Win sound + staggered star pings
-    sfx.win();
-    for (let i = 0; i < stars; i++) {
-      setTimeout(() => sfx.star(), 600 + i * 250);
-    }
-
-    let h=`<div class="sb-row"><span class="sb-row-label">Base (${gridSize}×${gridSize} ${difficulty})</span><span class="sb-row-value positive">+${sc.base.toLocaleString()}</span></div>`;
-    if(sc.timePenalty>0) h+=`<div class="sb-row"><span class="sb-row-label">Time penalty</span><span class="sb-row-value negative">\u2212${sc.timePenalty.toLocaleString()}</span></div>`;
-    if(sc.hintPenalty>0) h+=`<div class="sb-row"><span class="sb-row-label">Hints (${hintsUsed})</span><span class="sb-row-value negative">\u2212${sc.hintPenalty.toLocaleString()}</span></div>`;
-    if(sc.checkPenalty>0) h+=`<div class="sb-row"><span class="sb-row-label">Extra checks (${checksUsed-1})</span><span class="sb-row-value negative">\u2212${sc.checkPenalty.toLocaleString()}</span></div>`;
-    if(sc.movePenalty>0) h+=`<div class="sb-row"><span class="sb-row-label">Extra moves</span><span class="sb-row-value negative">\u2212${sc.movePenalty.toLocaleString()}</span></div>`;
-    h+=`<hr class="sb-divider"><div class="sb-row sb-total"><span class="sb-row-label">Total Score</span><span class="sb-row-value">${sc.total.toLocaleString()}</span></div>`;
-    h+=`<div class="sb-best ${isNew?'new-best':''}">${isNew?'\uD83C\uDF89 New personal best!':`Best: ${getBestScore().toLocaleString()}`}</div>`;
-    $('score-breakdown').innerHTML=h;
-
-    const ub=$('unlock-banner');
-    if(nw){ub.style.display='';$('unlock-banner-text').textContent=`${nw}×${nw} Grid Unlocked!`;$('unlock-banner-sub').textContent=`Earned in ${gameMode==='magic'?'Magic':'Latin'} Squares`;
-      setTimeout(() => sfx.unlock(), 800);
-    }
-    else ub.style.display='none';
-    $('win-overlay').classList.add('active');
-  }
-
-  // ── Resize handler ──
-  let resizeTimer;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      if (screens.game.classList.contains('active')) renderGrid();
-    }, 150);
-  });
-
-  updateMenuScores();
-  document.addEventListener('contextmenu', e => e.preventDefault());
-
-  // ══════════════════════════════
-  // ── PWA SERVICE WORKER ──
-  // ══════════════════════════════
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js').then(reg => {
-        console.log('[PWA] Service worker registered:', reg.scope);
-      }).catch(err => {
-        console.warn('[PWA] SW registration failed:', err);
-      });
-    });
-  }
-})();
-</script>
+<script src="game.js"></script>
 </body>
 </html>
